@@ -1,3 +1,4 @@
+
 from sqlite3 import connect
 from time import ctime, time
 import enum
@@ -12,18 +13,29 @@ class StatesEnum(enum.IntEnum):
 
 class Suggestion(object):
     def __init__(self, text=None, uid=None, photos=None, date=ctime(time()), posted=False):
+        if photos is None:
+            photos = list()
         self.text = text
         self.uid = uid
         self.photos = photos
         self.date = date
         self.posted = posted
 
+    def photos_str(self):
+        if len(self.photos) == 0:
+            return ""
+        s = self.photos[0]
+        for r in self.photos[1:]:
+            s += "|"
+            s += r
+        return s
+
     def write(self):
         con = connect("master.db")
         con.cursor().execute(
             f"INSERT OR IGNORE INTO suggestions "
             f"(text, uid, photos, date, posted) "
-            f"VALUES ('{self.text}', {self.uid}, '{self.photos}', {self.date}, {self.posted})"
+            f"VALUES ('{self.text}', {self.uid}, '{self.photos_str()}', '{self.date}', {self.posted})"
         )
         con.commit()
         con.close()
